@@ -212,7 +212,8 @@ def main():
     for script in run("git", "ls-files", "*.sh", cwd=source, capture=True).splitlines():
         run("bash", "-n", script, cwd=source)
     tests = subprocess.run(["bash", "tests/check-ipa.sh", str(normalized)], cwd=source, text=True,
-                           stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=900)
+                           stdout=subprocess.PIPE, stderr=subprocess.STDOUT, timeout=900,
+                           env={**os.environ, "LC_ALL": "C"})  # Match the committed baseline's bytewise sort order.
     print(tests.stdout, flush=True)
     require(tests.returncode == 0 and not re.search(r"(?m)^REVIEW |^No booted simulator:", tests.stdout),
             "Compatibility drift or test failure; retaining the previously installed build")
