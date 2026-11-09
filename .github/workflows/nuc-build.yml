@@ -1,0 +1,66 @@
+name: NUC unsigned RedditFilter build
+run-name: redditfilter-nuc-${{ inputs.build_key }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      upstream_sha:
+        description: Exact and101/RedditFilter main commit
+        required: true
+        type: string
+      base_tag:
+        description: Official stable RedditFilter release tag
+        required: true
+        type: string
+      base_asset_id:
+        description: Official release IPA asset ID
+        required: true
+        type: string
+      base_sha256:
+        description: SHA256 of the official release IPA
+        required: true
+        type: string
+      apply_patch:
+        description: Merge the pinned in-app Safari patch
+        required: true
+        default: true
+        type: boolean
+      build_key:
+        description: SHA256 fingerprint supplied by the NUC
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: nuc-build-${{ inputs.build_key }}
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: macos-15
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Test the packaging adapter
+        run: python3 -m unittest discover -s scripts/tests -p 'test_nuc_*.py'
+      - name: Build and test the selected source
+        env:
+          GH_TOKEN: ${{ github.token }}
+          UPSTREAM_SHA: ${{ inputs.upstream_sha }}
+          BASE_TAG: ${{ inputs.base_tag }}
+          BASE_ASSET_ID: ${{ inputs.base_asset_id }}
+          BASE_SHA256: ${{ inputs.base_sha256 }}
+          APPLY_PATCH: ${{ inputs.apply_patch }}
+          BUILD_KEY: ${{ inputs.build_key }}
+        run: python3 scripts/nuc_builder.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: redditfilter-nuc-${{ inputs.build_key }}
+          path: |
+            ${{ runner.temp }}/nuc-output/RedditFilter.ipa
+            ${{ runner.temp }}/nuc-output/manifest.json
+          if-no-files-found: error
+          overwrite: true
+          retention-days: 3
