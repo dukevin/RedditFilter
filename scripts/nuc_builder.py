@@ -14,7 +14,7 @@ import urllib.parse
 import zipfile
 
 PATCH_BASE = "7c9189258b6750fdeab2eb9f45b6a32c63540ce3"
-PATCH_HEAD = "8fc560a69cb8d4bc4ccefca7207cdd1f43175beb"
+PATCH_HEAD = "ce097529f613ff935afc686b6d6bef60e71504ff"
 UPSTREAM = "https://github.com/and101/RedditFilter.git"
 FORK = "https://github.com/dukevin/RedditFilter.git"
 OWN_EXTENSION = "RedditFilterSafari.appex"
